@@ -50,12 +50,17 @@ public:
     ImagePtr getSpriteImage(int id);
     bool isLoaded() { return m_loaded; }
 
+    void exportSprites();
+    void setLoadFromPng(bool loadFromPng) { m_loadFromPng = loadFromPng; }
+
 private:
     stdext::boolean<false> m_loaded;
     uint32 m_signature;
     int m_spritesCount;
     int m_spritesOffset;
     FileStreamPtr m_spritesFile;
+    bool m_loadFromPng = false;
+
 };
 
 extern SpriteManager g_sprites;

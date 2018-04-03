@@ -139,29 +139,52 @@ ImagePtr SpriteManager::getSpriteImage(int id)
         if(spriteAddress == 0)
             return nullptr;
 
-        m_spritesFile->seek(spriteAddress);
+        if (m_loadFromPng) {
+            return Image::loadPNG(stdext::format("sprites/%d.png", id));
+        } else {
+            m_spritesFile->seek(spriteAddress);
 
-        // skip color key
-        m_spritesFile->getU8();
-        m_spritesFile->getU8();
-        m_spritesFile->getU8();
+            // skip color key
+            m_spritesFile->getU8();
+            m_spritesFile->getU8();
+            m_spritesFile->getU8();
 
-        uint16 pixelDataSize = m_spritesFile->getU16();
+            uint16 pixelDataSize = m_spritesFile->getU16();
 
-        ImagePtr image(new Image(Size(SPRITE_SIZE, SPRITE_SIZE)));
+            ImagePtr image(new Image(Size(SPRITE_SIZE, SPRITE_SIZE)));
 
-        uint8 *pixels = image->getPixelData();
-        int writePos = 0;
-        int read = 0;
-        bool useAlpha = g_game.getFeature(Otc::GameSpritesAlphaChannel);
-        uint8 channels = useAlpha ? 4 : 3;
+            uint8 *pixels = image->getPixelData();
+            int writePos = 0;
+            int read = 0;
+            bool useAlpha = g_game.getFeature(Otc::GameSpritesAlphaChannel);
+            uint8 channels = useAlpha ? 4 : 3;
 
-        // decompress pixels
-        while(read < pixelDataSize && writePos < SPRITE_DATA_SIZE) {
-            uint16 transparentPixels = m_spritesFile->getU16();
-            uint16 coloredPixels = m_spritesFile->getU16();
+            // decompress pixels
+            while (read < pixelDataSize && writePos < SPRITE_DATA_SIZE) {
+                uint16 transparentPixels = m_spritesFile->getU16();
+                uint16 coloredPixels = m_spritesFile->getU16();
 
-            for(int i = 0; i < transparentPixels && writePos < SPRITE_DATA_SIZE; i++) {
+                for (int i = 0; i < transparentPixels && writePos < SPRITE_DATA_SIZE; i++) {
+                    pixels[writePos + 0] = 0x00;
+                    pixels[writePos + 1] = 0x00;
+                    pixels[writePos + 2] = 0x00;
+                    pixels[writePos + 3] = 0x00;
+                    writePos += 4;
+                }
+
+                for (int i = 0; i < coloredPixels && writePos < SPRITE_DATA_SIZE; i++) {
+                    pixels[writePos + 0] = m_spritesFile->getU8();
+                    pixels[writePos + 1] = m_spritesFile->getU8();
+                    pixels[writePos + 2] = m_spritesFile->getU8();
+                    pixels[writePos + 3] = useAlpha ? m_spritesFile->getU8() : 0xFF;
+                    writePos += 4;
+                }
+
+                read += 4 + (channels * coloredPixels);
+            }
+
+            // fill remaining pixels with alpha
+            while (writePos < SPRITE_DATA_SIZE) {
                 pixels[writePos + 0] = 0x00;
                 pixels[writePos + 1] = 0x00;
                 pixels[writePos + 2] = 0x00;
@@ -169,30 +192,28 @@ ImagePtr SpriteManager::getSpriteImage(int id)
                 writePos += 4;
             }
 
-            for(int i = 0; i < coloredPixels && writePos < SPRITE_DATA_SIZE; i++) {
-                pixels[writePos + 0] = m_spritesFile->getU8();
-                pixels[writePos + 1] = m_spritesFile->getU8();
-                pixels[writePos + 2] = m_spritesFile->getU8();
-                pixels[writePos + 3] = useAlpha ? m_spritesFile->getU8() : 0xFF;
-                writePos += 4;
-            }
-
-            read += 4 + (channels * coloredPixels);
+            return image;
         }
-
-        // fill remaining pixels with alpha
-        while(writePos < SPRITE_DATA_SIZE) {
-            pixels[writePos + 0] = 0x00;
-            pixels[writePos + 1] = 0x00;
-            pixels[writePos + 2] = 0x00;
-            pixels[writePos + 3] = 0x00;
-            writePos += 4;
-        }
-
-        return image;
     } catch(stdext::exception& e) {
         g_logger.error(stdext::format("Failed to get sprite id %d: %s", id, e.what()));
         return nullptr;
+    }
+}
+
+void SpriteManager::exportSprites() {
+    if (!m_loaded)
+        stdext::throw_exception("failed to export sprites, spr is not loaded");
+
+    if (m_loadFromPng)
+        stdext::throw_exception("cannot export sprites with enabled feature GameLoadTexturesFromPng");
+
+    g_resources.makeDir("sprites");
+
+    for (int i = 1; i <= g_sprites.getSpritesCount(); i++) {
+        ImagePtr image = getSpriteImage(i);
+        if (image != nullptr) {
+            image->savePNG(stdext::format("sprites/%d.png", i));
+        }
     }
 }
 
