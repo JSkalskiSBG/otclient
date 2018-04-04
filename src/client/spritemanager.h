@@ -25,15 +25,11 @@
 
 #include <framework/core/declarations.h>
 #include <framework/graphics/declarations.h>
+#include "const.h"
 
 //@bindsingleton g_sprites
 class SpriteManager
 {
-    enum {
-        SPRITE_SIZE = 64,
-        SPRITE_DATA_SIZE = SPRITE_SIZE*SPRITE_SIZE * 4
-    };
-
 public:
     SpriteManager();
 
@@ -50,8 +46,10 @@ public:
     ImagePtr getSpriteImage(int id);
     bool isLoaded() { return m_loaded; }
 
-    void exportSprites();
-    void setLoadFromPng(bool loadFromPng) { m_loadFromPng = loadFromPng; }
+	uint8_t getMaxElevation() { return uint8_t(m_spritesFactor * Otc::MAX_ELEVATION); }
+	int getSpritesSize() { return m_spritesFactor * Otc::TILE_PIXELS; }
+	int getSpritesFactor() { return m_spritesFactor; }
+	void setSpritesFactor(int spritesFactor) { m_spritesFactor = spritesFactor; }
 
 private:
     stdext::boolean<false> m_loaded;
@@ -59,7 +57,7 @@ private:
     int m_spritesCount;
     int m_spritesOffset;
     FileStreamPtr m_spritesFile;
-    bool m_loadFromPng = false;
+    int m_spritesFactor;
 
 };
 

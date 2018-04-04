@@ -24,6 +24,7 @@
 #include "map.h"
 #include "game.h"
 #include "tile.h"
+#include "spritemanager.h"
 #include <framework/core/eventdispatcher.h>
 #include <framework/graphics/graphics.h>
 
@@ -266,8 +267,8 @@ void LocalPlayer::updateWalkOffset(int totalPixelsWalked)
 void LocalPlayer::updateWalk()
 {
     int stepDuration = getStepDuration();
-    float walkTicksPerPixel = getStepDuration(true) / 64.0f;
-    int totalPixelsWalked = std::min<int>(m_walkTimer.ticksElapsed() / walkTicksPerPixel, 64.0f);
+    float walkTicksPerPixel = getStepDuration(true) / (float) g_sprites.getSpritesSize();
+    int totalPixelsWalked = std::min<int>(m_walkTimer.ticksElapsed() / walkTicksPerPixel, (float) g_sprites.getSpritesSize());
 
     // update walk animation and offsets
     updateWalkAnimation(totalPixelsWalked);

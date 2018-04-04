@@ -26,7 +26,7 @@
 namespace Otc
 {
     enum {
-        TILE_PIXELS = 64,
+        TILE_PIXELS = 32,
         MAX_ELEVATION = 24,
 
         SEA_FLOOR = 7,

@@ -22,6 +22,7 @@
 
 #include "lightview.h"
 #include "mapview.h"
+#include "spritemanager.h"
 #include <framework/graphics/framebuffer.h>
 #include <framework/graphics/framebuffermanager.h>
 #include <framework/graphics/painter.h>
@@ -79,7 +80,7 @@ void LightView::setGlobalLight(const Light& light)
 void LightView::addLightSource(const Point& center, float scaleFactor, const Light& light)
 {
     int intensity = std::min<int>(light.intensity, MAX_LIGHT_INTENSITY);
-    int radius = intensity * Otc::TILE_PIXELS * scaleFactor;
+    int radius = intensity * g_sprites.getSpritesSize() * scaleFactor;
 
     Color color = Color::from8bit(light.color);
     float brightness = 0.5f + (intensity/(float)MAX_LIGHT_INTENSITY)*0.5f;

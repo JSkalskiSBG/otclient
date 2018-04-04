@@ -24,6 +24,7 @@
 #include "thingtypemanager.h"
 #include "map.h"
 #include "tile.h"
+#include "spritemanager.h"
 #include <framework/core/clock.h>
 #include <framework/core/eventdispatcher.h>
 
@@ -73,7 +74,7 @@ void Missile::setPath(const Position& fromPosition, const Position& toPosition)
     m_position = fromPosition;
     m_delta = Point(toPosition.x - fromPosition.x, toPosition.y - fromPosition.y);
     m_duration = 150 * std::sqrt(m_delta.length());
-    m_delta *= Otc::TILE_PIXELS;
+    m_delta *= g_sprites.getSpritesSize();
     m_animationTimer.restart();
 
     // schedule removal

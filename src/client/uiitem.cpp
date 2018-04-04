@@ -21,6 +21,7 @@
  */
 
 #include "uiitem.h"
+#include "spritemanager.h"
 #include <framework/otml/otml.h>
 #include <framework/graphics/graphics.h>
 #include <framework/graphics/fontmanager.h>
@@ -53,7 +54,7 @@ void UIItem::drawSelf(Fw::DrawPane drawPane)
             return;
 
         float scaleFactor = std::min<float>(drawRect.width() / (float)exactSize, drawRect.height() / (float)exactSize);
-        dest += (m_item->getDisplacement() - Point(64,64)) * scaleFactor;
+        dest += (m_item->getDisplacement() - Point(g_sprites.getSpritesSize(),g_sprites.getSpritesSize())) * scaleFactor;
 
         g_painter->setColor(m_color);
         m_item->draw(dest, scaleFactor, true);

@@ -78,7 +78,7 @@ void Creature::draw(const Point& dest, float scaleFactor, bool animate, LightVie
 
     if(m_showStaticSquare && animate) {
         g_painter->setColor(m_staticSquareColor);
-        g_painter->drawBoundingRect(Rect(dest + (animationOffset - getDisplacement())*scaleFactor, Size(Otc::TILE_PIXELS, Otc::TILE_PIXELS)*scaleFactor), std::max<int>((int)(2*scaleFactor), 1));
+        g_painter->drawBoundingRect(Rect(dest + (animationOffset - getDisplacement())*scaleFactor, Size(g_sprites.getSpritesSize(), g_sprites.getSpritesSize())*scaleFactor), std::max<int>((int)(2*scaleFactor), 1));
         g_painter->setColor(Color::white);
     }
 
@@ -203,7 +203,7 @@ void Creature::drawOutfit(const Rect& destRect, bool resize)
 
     int frameSize;
     if(!resize)
-        frameSize = std::max<int>(exactSize * 0.75f, 2 * Otc::TILE_PIXELS * 0.75f);
+        frameSize = std::max<int>(exactSize * 0.75f, 2 * g_sprites.getSpritesSize() * 0.75f);
     else if(!(frameSize = exactSize))
         return;
 
@@ -213,12 +213,12 @@ void Creature::drawOutfit(const Rect& destRect, bool resize)
         outfitBuffer->bind();
         g_painter->setAlphaWriting(true);
         g_painter->clear(Color::alpha);
-        internalDrawOutfit(Point(frameSize - Otc::TILE_PIXELS, frameSize - Otc::TILE_PIXELS) + getDisplacement(), 1, false, true, Otc::South);
+        internalDrawOutfit(Point(frameSize - g_sprites.getSpritesSize(), frameSize - g_sprites.getSpritesSize()) + getDisplacement(), 1, false, true, Otc::South);
         outfitBuffer->release();
         outfitBuffer->draw(destRect, Rect(0,0,frameSize,frameSize));
     } else {
         float scaleFactor = destRect.width() / (float)frameSize;
-        Point dest = destRect.bottomRight() - (Point(Otc::TILE_PIXELS,Otc::TILE_PIXELS) - getDisplacement()) * scaleFactor;
+        Point dest = destRect.bottomRight() - (Point(g_sprites.getSpritesSize(),g_sprites.getSpritesSize()) - getDisplacement()) * scaleFactor;
         internalDrawOutfit(dest, scaleFactor, false, true, Otc::South);
     }
 }
@@ -498,16 +498,16 @@ void Creature::updateWalkAnimation(int totalPixelsWalked)
     }
     if(footAnimPhases == 0)
         m_walkAnimationPhase = 0;
-    else if(m_footStepDrawn && m_footTimer.ticksElapsed() >= footDelay && totalPixelsWalked < 64) {
+    else if(m_footStepDrawn && m_footTimer.ticksElapsed() >= footDelay && totalPixelsWalked < g_sprites.getSpritesSize()) {
         m_footStep++;
         m_walkAnimationPhase = 1 + (m_footStep % footAnimPhases);
         m_footStepDrawn = false;
         m_footTimer.restart();
-    } else if(m_walkAnimationPhase == 0 && totalPixelsWalked < 64) {
+    } else if(m_walkAnimationPhase == 0 && totalPixelsWalked < g_sprites.getSpritesSize()) {
         m_walkAnimationPhase = 1 + (m_footStep % footAnimPhases);
     }
 
-    if(totalPixelsWalked == 64 && !m_walkFinishAnimEvent) {
+    if(totalPixelsWalked == g_sprites.getSpritesSize() && !m_walkFinishAnimEvent) {
         auto self = static_self_cast<Creature>();
         m_walkFinishAnimEvent = g_dispatcher.scheduleEvent([self] {
             if(!self->m_walking || self->m_walkTimer.ticksElapsed() >= self->getStepDuration(true))
@@ -522,26 +522,26 @@ void Creature::updateWalkOffset(int totalPixelsWalked)
 {
     m_walkOffset = Point(0,0);
     if(m_direction == Otc::North || m_direction == Otc::NorthEast || m_direction == Otc::NorthWest)
-        m_walkOffset.y = 64 - totalPixelsWalked;
+        m_walkOffset.y = g_sprites.getSpritesSize() - totalPixelsWalked;
     else if(m_direction == Otc::South || m_direction == Otc::SouthEast || m_direction == Otc::SouthWest)
-        m_walkOffset.y = totalPixelsWalked - 64;
+        m_walkOffset.y = totalPixelsWalked - g_sprites.getSpritesSize();
 
     if(m_direction == Otc::East || m_direction == Otc::NorthEast || m_direction == Otc::SouthEast)
-        m_walkOffset.x = totalPixelsWalked - 64;
+        m_walkOffset.x = totalPixelsWalked - g_sprites.getSpritesSize();
     else if(m_direction == Otc::West || m_direction == Otc::NorthWest || m_direction == Otc::SouthWest)
-        m_walkOffset.x = 64 - totalPixelsWalked;
+        m_walkOffset.x = g_sprites.getSpritesSize() - totalPixelsWalked;
 }
 
 void Creature::updateWalkingTile()
 {
     // determine new walking tile
     TilePtr newWalkingTile;
-    Rect virtualCreatureRect(Otc::TILE_PIXELS + (m_walkOffset.x - getDisplacementX()),
-                             Otc::TILE_PIXELS + (m_walkOffset.y - getDisplacementY()),
-                             Otc::TILE_PIXELS, Otc::TILE_PIXELS);
+    Rect virtualCreatureRect(g_sprites.getSpritesSize() + (m_walkOffset.x - getDisplacementX()),
+                             g_sprites.getSpritesSize() + (m_walkOffset.y - getDisplacementY()),
+                             g_sprites.getSpritesSize(), g_sprites.getSpritesSize());
     for(int xi = -1; xi <= 1 && !newWalkingTile; ++xi) {
         for(int yi = -1; yi <= 1 && !newWalkingTile; ++yi) {
-            Rect virtualTileRect((xi+1)*Otc::TILE_PIXELS, (yi+1)*Otc::TILE_PIXELS, Otc::TILE_PIXELS, Otc::TILE_PIXELS);
+            Rect virtualTileRect((xi+1)*g_sprites.getSpritesSize(), (yi+1)*g_sprites.getSpritesSize(), g_sprites.getSpritesSize(), g_sprites.getSpritesSize());
 
             // only render creatures where bottom right is inside tile rect
             if(virtualTileRect.contains(virtualCreatureRect.bottomRight())) {
@@ -579,14 +579,14 @@ void Creature::nextWalkUpdate()
         m_walkUpdateEvent = g_dispatcher.scheduleEvent([self] {
             self->m_walkUpdateEvent = nullptr;
             self->nextWalkUpdate();
-        }, getStepDuration() / 64);
+        }, getStepDuration() / g_sprites.getSpritesSize());
     }
 }
 
 void Creature::updateWalk()
 {
-    float walkTicksPerPixel = getStepDuration(true) / 64;
-    int totalPixelsWalked = std::min<int>(m_walkTimer.ticksElapsed() / walkTicksPerPixel, 64.0f);
+    float walkTicksPerPixel = getStepDuration(true) / (float) g_sprites.getSpritesSize();
+    int totalPixelsWalked = std::min<int>(m_walkTimer.ticksElapsed() / walkTicksPerPixel, (float) g_sprites.getSpritesSize());
 
     // needed for paralyze effect
     m_walkedPixels = std::max<int>(m_walkedPixels, totalPixelsWalked);

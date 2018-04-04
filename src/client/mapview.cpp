@@ -30,6 +30,7 @@
 #include "missile.h"
 #include "shadermanager.h"
 #include "lightview.h"
+#include "spritemanager.h"
 
 #include <framework/graphics/graphics.h>
 #include <framework/graphics/image.h>
@@ -37,7 +38,6 @@
 #include <framework/core/eventdispatcher.h>
 #include <framework/core/application.h>
 #include <framework/core/resourcemanager.h>
-
 
 enum {
     // 3840x2160 => 1080p optimized
@@ -60,7 +60,7 @@ MapView::MapView()
     m_fadeOutTime = 0;
     m_fadeInTime = 0;
     m_minimumAmbientLight = 0;
-    m_optimizedSize = Size(g_map.getAwareRange().horizontal(), g_map.getAwareRange().vertical()) * Otc::TILE_PIXELS;
+    m_optimizedSize = Size(g_map.getAwareRange().horizontal(), g_map.getAwareRange().vertical()) * g_sprites.getSpritesSize();
 
     m_framebuffer = g_framebuffers.createFrameBuffer();
     setVisibleDimension(Size(15, 11));
@@ -81,7 +81,7 @@ void MapView::draw(const Rect& rect)
     if(m_mustUpdateVisibleTilesCache || m_updateTilesPos > 0)
         updateVisibleTilesCache(m_mustUpdateVisibleTilesCache ? 0 : m_updateTilesPos);
 
-    float scaleFactor = m_tileSize/(float)Otc::TILE_PIXELS;
+    float scaleFactor = m_tileSize/(float)g_sprites.getSpritesSize();
     Position cameraPosition = getCameraPosition();
 
     int drawFlags = 0;
@@ -422,7 +422,7 @@ void MapView::updateGeometry(const Size& visibleDimension, const Size& optimized
     int tileSize = 0;
     Size bufferSize;
 
-    int possiblesTileSizes[] = {1,2,4,8,16,32};
+    int possiblesTileSizes[] = {1,2,4,8,16,32,64,128};
     for(int candidateTileSize : possiblesTileSizes) {
         bufferSize = (visibleDimension + Size(3,3)) * candidateTileSize;
         if(bufferSize.width() > g_graphics.getMaxTextureSize() || bufferSize.height() > g_graphics.getMaxTextureSize())
@@ -604,7 +604,7 @@ void MapView::move(int x, int y)
 
 Rect MapView::calcFramebufferSource(const Size& destSize)
 {
-    float scaleFactor = m_tileSize/(float)Otc::TILE_PIXELS;
+    float scaleFactor = m_tileSize/(float)g_sprites.getSpritesSize();
     Point drawOffset = ((m_drawDimension - m_visibleDimension - Size(1,1)).toPoint()/2) * m_tileSize;
     if(isFollowingCreature())
         drawOffset += m_followingCreature->getWalkOffset() * scaleFactor;

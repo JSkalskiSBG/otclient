@@ -29,6 +29,7 @@
 #include "effect.h"
 #include "protocolgame.h"
 #include "lightview.h"
+#include "spritemanager.h"
 #include <framework/graphics/fontmanager.h>
 
 Tile::Tile(const Position& position) :
@@ -89,9 +90,9 @@ void Tile::draw(const Point& dest, float scaleFactor, int drawFlags, LightView *
             if(m_selected)
                 g_painter->resetColor();
 
-            m_drawElevation += thing->getElevation();
-            if(m_drawElevation > Otc::MAX_ELEVATION)
-                m_drawElevation = Otc::MAX_ELEVATION;
+            m_drawElevation += thing->getElevation() * g_sprites.getSpritesFactor();
+            if(m_drawElevation > g_sprites.getMaxElevation())
+                m_drawElevation = g_sprites.getMaxElevation();
         }
     }
 
@@ -111,9 +112,9 @@ void Tile::draw(const Point& dest, float scaleFactor, int drawFlags, LightView *
                 redrawPreviousTopH = std::max<int>(thing->getHeight(), redrawPreviousTopH);
             }
 
-            m_drawElevation += thing->getElevation();
-            if(m_drawElevation > Otc::MAX_ELEVATION)
-                m_drawElevation = Otc::MAX_ELEVATION;
+            m_drawElevation += thing->getElevation() * g_sprites.getSpritesFactor();
+            if(m_drawElevation > g_sprites.getMaxElevation())
+                m_drawElevation = g_sprites.getMaxElevation();
         }
     }
 
@@ -127,7 +128,7 @@ void Tile::draw(const Point& dest, float scaleFactor, int drawFlags, LightView *
                         continue;
                     const TilePtr& tile = g_map.getTile(m_position.translated(x,y));
                     if(tile)
-                        tile->draw(dest + Point(x*Otc::TILE_PIXELS, y*Otc::TILE_PIXELS)*scaleFactor, scaleFactor, topRedrawFlags);
+                        tile->draw(dest + Point(x*g_sprites.getSpritesSize(), y*g_sprites.getSpritesSize())*scaleFactor, scaleFactor, topRedrawFlags);
                 }
             }
         }
@@ -137,8 +138,8 @@ void Tile::draw(const Point& dest, float scaleFactor, int drawFlags, LightView *
     if(drawFlags & Otc::DrawCreatures) {
         if(animate) {
             for(const CreaturePtr& creature : m_walkingCreatures) {
-                creature->draw(Point(dest.x + ((creature->getPosition().x - m_position.x)*Otc::TILE_PIXELS - m_drawElevation)*scaleFactor,
-                                     dest.y + ((creature->getPosition().y - m_position.y)*Otc::TILE_PIXELS - m_drawElevation)*scaleFactor), scaleFactor, animate, lightView);
+                creature->draw(Point(dest.x + ((creature->getPosition().x - m_position.x)*g_sprites.getSpritesSize() - m_drawElevation)*scaleFactor,
+                                     dest.y + ((creature->getPosition().y - m_position.y)*g_sprites.getSpritesSize() - m_drawElevation)*scaleFactor), scaleFactor, animate, lightView);
             }
         }
 

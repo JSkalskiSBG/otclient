@@ -397,7 +397,7 @@ void ThingType::draw(const Point& dest, float scaleFactor, int layer, int xPatte
         textureRect = m_texturesFramesRects[animationPhase][frameIndex];
     }
 
-    Rect screenRect(dest + (textureOffset - m_displacement - (m_size.toPoint() - Point(1, 1)) * 64) * scaleFactor,
+    Rect screenRect(dest + (textureOffset - m_displacement - (m_size.toPoint() - Point(1, 1)) * g_sprites.getSpritesSize()) * scaleFactor,
                     textureRect.size() * scaleFactor);
 
     bool useOpacity = m_opacity < 1.0f;
@@ -441,7 +441,7 @@ const TexturePtr& ThingType::getTexture(int animationPhase)
         if(useCustomImage)
             fullImage = Image::load(m_customImage);
         else
-            fullImage = ImagePtr(new Image(textureSize * Otc::TILE_PIXELS));
+            fullImage = ImagePtr(new Image(textureSize * g_sprites.getSpritesSize()));
 
         m_texturesFramesRects[animationPhase].resize(indexSize);
         m_texturesFramesOriginRects[animationPhase].resize(indexSize);
@@ -454,7 +454,7 @@ const TexturePtr& ThingType::getTexture(int animationPhase)
                         bool spriteMask = (m_category == ThingCategoryCreature && l > 0);
                         int frameIndex = getTextureIndex(l % textureLayers, x, y, z);
                         Point framePos = Point(frameIndex % (textureSize.width() / m_size.width()) * m_size.width(),
-                                               frameIndex / (textureSize.width() / m_size.width()) * m_size.height()) * Otc::TILE_PIXELS;
+                                               frameIndex / (textureSize.width() / m_size.width()) * m_size.height()) * g_sprites.getSpritesSize();
 
                         if(!useCustomImage) {
                             for(int h = 0; h < m_size.height(); ++h) {
@@ -467,7 +467,7 @@ const TexturePtr& ThingType::getTexture(int animationPhase)
                                             spriteImage->overwriteMask(maskColors[l - 1]);
                                         }
                                         Point spritePos = Point(m_size.width()  - w - 1,
-                                                                m_size.height() - h - 1) * Otc::TILE_PIXELS;
+                                                                m_size.height() - h - 1) * g_sprites.getSpritesSize();
 
                                         fullImage->blit(framePos + spritePos, spriteImage);
                                     }
@@ -475,9 +475,9 @@ const TexturePtr& ThingType::getTexture(int animationPhase)
                             }
                         }
 
-                        Rect drawRect(framePos + Point(m_size.width(), m_size.height()) * Otc::TILE_PIXELS - Point(1,1), framePos);
-                        for(int x = framePos.x; x < framePos.x + m_size.width() * Otc::TILE_PIXELS; ++x) {
-                            for(int y = framePos.y; y < framePos.y + m_size.height() * Otc::TILE_PIXELS; ++y) {
+                        Rect drawRect(framePos + Point(m_size.width(), m_size.height()) * g_sprites.getSpritesSize() - Point(1,1), framePos);
+                        for(int x = framePos.x; x < framePos.x + m_size.width() * g_sprites.getSpritesSize(); ++x) {
+                            for(int y = framePos.y; y < framePos.y + m_size.height() * g_sprites.getSpritesSize(); ++y) {
                                 uint8 *p = fullImage->getPixel(x,y);
                                 if(p[3] != 0x00) {
                                     drawRect.setTop   (std::min<int>(y, (int)drawRect.top()));
@@ -489,7 +489,7 @@ const TexturePtr& ThingType::getTexture(int animationPhase)
                         }
 
                         m_texturesFramesRects[animationPhase][frameIndex] = drawRect;
-                        m_texturesFramesOriginRects[animationPhase][frameIndex] = Rect(framePos, Size(m_size.width(), m_size.height()) * Otc::TILE_PIXELS);
+                        m_texturesFramesOriginRects[animationPhase][frameIndex] = Rect(framePos, Size(m_size.width(), m_size.height()) * g_sprites.getSpritesSize());
                         m_texturesFramesOffsets[animationPhase][frameIndex] = drawRect.topLeft() - framePos;
                     }
                 }
