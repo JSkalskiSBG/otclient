@@ -140,7 +140,8 @@ ImagePtr SpriteManager::getSpriteImage(int id)
             return nullptr;
 
         if (m_loadFromPng) {
-            return Image::loadPNG(stdext::format("sprites/%d.png", id));
+            ImagePtr image = Image::loadPNG(stdext::format("sprites/%d.png", id));
+            return image;
         } else {
             m_spritesFile->seek(spriteAddress);
 

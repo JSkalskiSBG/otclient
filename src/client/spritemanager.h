@@ -30,7 +30,7 @@
 class SpriteManager
 {
     enum {
-        SPRITE_SIZE = 32,
+        SPRITE_SIZE = 64,
         SPRITE_DATA_SIZE = SPRITE_SIZE*SPRITE_SIZE * 4
     };
 

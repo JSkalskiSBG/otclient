@@ -397,7 +397,7 @@ void ThingType::draw(const Point& dest, float scaleFactor, int layer, int xPatte
         textureRect = m_texturesFramesRects[animationPhase][frameIndex];
     }
 
-    Rect screenRect(dest + (textureOffset - m_displacement - (m_size.toPoint() - Point(1, 1)) * 32) * scaleFactor,
+    Rect screenRect(dest + (textureOffset - m_displacement - (m_size.toPoint() - Point(1, 1)) * 64) * scaleFactor,
                     textureRect.size() * scaleFactor);
 
     bool useOpacity = m_opacity < 1.0f;
@@ -503,7 +503,7 @@ const TexturePtr& ThingType::getTexture(int animationPhase)
 
 Size ThingType::getBestTextureDimension(int w, int h, int count)
 {
-    const int MAX = 32;
+    const int MAX = 64;
 
     int k = 1;
     while(k < w)

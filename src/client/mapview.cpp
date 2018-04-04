@@ -583,18 +583,18 @@ void MapView::move(int x, int y)
     m_moveOffset.x += x;
     m_moveOffset.y += y;
 
-    int32_t tmp = m_moveOffset.x / 32;
+    int32_t tmp = m_moveOffset.x / 64;
     bool requestTilesUpdate = false;
     if(tmp != 0) {
         m_customCameraPosition.x += tmp;
-        m_moveOffset.x %= 32;
+        m_moveOffset.x %= 64;
         requestTilesUpdate = true;
     }
 
-    tmp = m_moveOffset.y / 32;
+    tmp = m_moveOffset.y / 64;
     if(tmp != 0) {
         m_customCameraPosition.y += tmp;
-        m_moveOffset.y %= 32;
+        m_moveOffset.y %= 64;
         requestTilesUpdate = true;
     }
 

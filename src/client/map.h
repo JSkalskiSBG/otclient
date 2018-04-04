@@ -90,7 +90,7 @@ enum {
 };
 
 enum {
-    BLOCK_SIZE = 32
+    BLOCK_SIZE = 64
 };
 
 enum : uint8 {
